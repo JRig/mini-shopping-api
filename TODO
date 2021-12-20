@@ -1,0 +1,21 @@
+
+Todo:
+  ☐ Functional
+    ☐ Ability to create products
+    ☐ Ability to remove products
+    ☐ Ability to read products
+    ☐ Ability to calculate totals without placing an order
+    ☐ Cart calculations:
+      ☐ Every fifth product of same kind is free
+      ☐ Total amount cannot exceed 100$
+      ☐ Apply a 1$ discount when total is >= 20$
+  ☐ Technical
+    ☐ RESTful API
+    ☐ Extendable cart calculations
+    ☐ Store however
+    ☐ Tests
+    ☐ Readme with instructions
+  ☐ Bonus
+    ☐ OpenAPI Docs
+    ☐ Functional programming where possible
+    ☐ Load cart calculations from external storage
