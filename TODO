@@ -1,9 +1,9 @@
 
 Todo:
   ☐ Functional
-    ☐ Ability to create products
-    ☐ Ability to remove products
-    ☐ Ability to read products
+    ✔ Ability to create products @done(21-12-21 10:06)
+    ✔ Ability to remove products @done(21-12-21 10:30)
+    ✔ Ability to read products @done(21-12-21 10:06)
     ☐ Ability to calculate totals without placing an order
     ☐ Cart calculations:
       ☐ Every fifth product of same kind is free

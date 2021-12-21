@@ -13,8 +13,11 @@ CREATE TABLE IF NOT EXISTS products (
 DELETE_TABLE = "DELETE FROM products;"
 
 
-def create_db():
-    conn: Connection = db.connect("minishop.db")
+def create_db(test=False):
+    if test:
+        conn: Connection = db.connect("test_minishop.db")
+    else:
+        conn: Connection = db.connect("minishop.db")
     c = conn.cursor()
     c.execute(CREATE_TABLES)
     c.execute(DELETE_TABLE)
@@ -62,8 +65,16 @@ def clear_products(conn: Connection):
     c.execute("DELETE FROM products;")
 
 
+def delete_product(conn: Connection, product_id: int):
+    c = conn.cursor()
+    c.execute("""
+    DELETE FROM products
+    WHERE product_id = ?
+    """, [product_id])
+
+
 if __name__ == "__main__":
-    conn = create_db()
+    conn = create_db(test=True)
     with conn:
         clear_products(conn)
         c = conn.cursor()
