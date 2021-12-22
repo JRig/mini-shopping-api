@@ -1,27 +1,6 @@
-import sqlite3 as db
 from sqlite3 import Connection
-
-CREATE_TABLES = """
-CREATE TABLE IF NOT EXISTS products (
-    product_id INTEGER PRIMARY KEY,
-    title VARCHAR(20) UNIQUE,
-    description TEXT NOT NULL,
-    price INTEGER NOT NULL,
-    currency VARCHAR(3) NOT NULL
-);
-"""
-DELETE_TABLE = "DELETE FROM products;"
-
-
-def create_db(test=False):
-    if test:
-        conn: Connection = db.connect("test_minishop.db")
-    else:
-        conn: Connection = db.connect("minishop.db")
-    c = conn.cursor()
-    c.execute(CREATE_TABLES)
-    c.execute(DELETE_TABLE)
-    return conn
+from sqlite3.dbapi2 import DatabaseError
+from src.db_build import connect_db
 
 
 def create_product(conn: Connection, product: dict):
@@ -37,9 +16,11 @@ def create_product(conn: Connection, product: dict):
         product["price"],
         product["currency"]
         ])
+    print(f"Inserted {product}")
     c.execute(
         "SELECT product_id FROM products WHERE title = ?",
         [product["title"]])
+    conn.commit()
     return c.fetchone()[0]
 
 
@@ -50,9 +31,11 @@ def read_product(conn: Connection, product_id: int):
     WHERE product_id = ?
     """, [product_id])
     product_raw = c.fetchall()
+    if len(product_raw) == 0:
+        return None
     p_id, p_title, p_descr, p_price, p_currency = product_raw[0]
     return {
-        "id": p_id,
+        "product_id": p_id,
         "title": p_title,
         "description": p_descr,
         "price": p_price,
@@ -60,28 +43,49 @@ def read_product(conn: Connection, product_id: int):
     }
 
 
+def read_all_products(conn: Connection):
+    c = conn.cursor()
+    c.execute("""
+    SELECT * FROM products
+    """)
+    products_raw = c.fetchall()
+    products = [dict(
+        product_id=p[0],
+        title=p[1],
+        description=p[2],
+        price=p[3],
+        currency=p[4]
+    ) for p in products_raw]
+    return products
+
+
 def clear_products(conn: Connection):
     c = conn.cursor()
     c.execute("DELETE FROM products;")
 
 
-def delete_product(conn: Connection, product_id: int):
+def delete_product(conn: Connection, product_id: int) -> bool:
     c = conn.cursor()
-    c.execute("""
-    DELETE FROM products
-    WHERE product_id = ?
-    """, [product_id])
+    try:
+        c.execute("""
+        DELETE FROM products
+        WHERE product_id = ?
+        """, [product_id])
+        conn.commit()
+    except DatabaseError:
+        return False
+    return True
 
 
 if __name__ == "__main__":
-    conn = create_db(test=True)
+    conn = connect_db(test=True)
     with conn:
         clear_products(conn)
         c = conn.cursor()
         c.execute("""
         INSERT INTO products (title, description, price, currency)
         VALUES (
-            "Product1", "", 20, "USD"
+            "Manual1", "", 20, "USD"
         );
         """)
         c.execute("""
