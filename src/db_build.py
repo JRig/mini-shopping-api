@@ -8,12 +8,14 @@ CREATE TABLE IF NOT EXISTS products (
     title VARCHAR(20) UNIQUE,
     description TEXT NOT NULL,
     price INTEGER NOT NULL,
-    currency VARCHAR(3) NOT NULL
+    currency VARCHAR(3) NOT NULL,
+    stock INTEGER NOT NULL DEFAULT 1
 );
 """
 CREATE_CARTS = """
 CREATE TABLE IF NOT EXISTS carts (
-    cart_id INTEGER PRIMARY KEY
+    cart_id INTEGER PRIMARY KEY,
+    total FLOAT
 );
 """
 CREATE_ORDERS = """
@@ -21,6 +23,7 @@ CREATE TABLE IF NOT EXISTS orders (
     order_id INTEGER PRIMARY KEY,
     cart_id INTEGER,
     product_id INTEGER,
+    amount INTEGER DEFAULT 1,
     FOREIGN KEY (cart_id)
         REFERENCES carts (cart_id)
         ON UPDATE CASCADE
@@ -59,3 +62,14 @@ def connect_db(test=False):
         conn: Connection = db.connect("minishop.db")
     build_if_needed(conn)
     return conn
+
+
+if __name__ == "__main__":
+    for source in ["test_minishop.db", "minishop.db"]:
+        conn = db.connect(source)
+        c = conn.cursor()
+        c.execute("DROP TABLE IF EXISTS orders;")
+        c.execute("DROP TABLE IF EXISTS carts;")
+        c.execute("DROP TABLE IF EXISTS products;")
+        conn.commit()
+        conn.close()

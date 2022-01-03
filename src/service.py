@@ -1,13 +1,14 @@
+from sqlite3.dbapi2 import Connection
 from flask import Flask, request, g, make_response, current_app
-import sqlite3
 from src.validations import validate_product
 from src.product_handler import delete_product, read_product, create_product, read_all_products
 from src.db_build import connect_db
 
+
 def app():
     flask_app = Flask(__name__)
 
-    def get_db():
+    def get_db() -> Connection:
         db = getattr(g, '_database', None)
         if db is None:
             db = g._database = connect_db()
@@ -48,7 +49,7 @@ def app():
 
     @flask_app.teardown_appcontext
     def close_connection(exception):
-        db = getattr(g, '_database', None)
+        db: Connection = getattr(g, '_database', None)
         if db is not None:
             db.close()
 

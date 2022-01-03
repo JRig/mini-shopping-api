@@ -15,7 +15,8 @@ def test_can_write_a_product_to_db():
             TEST_PRODUCT["title"],
             TEST_PRODUCT["description"],
             TEST_PRODUCT["price"],
-            TEST_PRODUCT["currency"]
+            TEST_PRODUCT["currency"],
+            TEST_PRODUCT["stock"]
             )]
 
 

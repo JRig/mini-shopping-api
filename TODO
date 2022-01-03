@@ -5,15 +5,15 @@ Todo:
     ✔ Ability to remove products @done(21-12-21 10:30)
     ✔ Ability to read products @done(21-12-21 10:06)
     ☐ Ability to calculate totals without placing an order
-    ☐ Cart calculations:
-      ☐ Every fifth product of same kind is free
-      ☐ Total amount cannot exceed 100$
-      ☐ Apply a 1$ discount when total is >= 20$
+    ✔ Cart calculations: @done(22-01-03 09:54)
+      ✔ Every fifth product of same kind is free @done(22-01-03 09:54)
+      ✔ Total amount cannot exceed 100$ @done(22-01-03 09:54)
+      ✔ Apply a 1$ discount when total is >= 20$ @done(22-01-03 09:54)
   ☐ Technical
     ☐ RESTful API
     ☐ Extendable cart calculations
-    ☐ Store however
-    ☐ Tests
+    ✔ Store however @done(22-01-03 09:56)
+    ✔ Tests @done(22-01-03 09:55)
     ☐ Readme with instructions
   ☐ Bonus
     ☐ OpenAPI Docs

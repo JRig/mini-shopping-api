@@ -11,14 +11,28 @@ class Product(BaseModel):
     currency: Optional[str] = "USD"
 
 
+class Order(BaseModel):
+    amount: int = 1
+    product_id: int
+    item_price: Optional[int]
+
+
 class Cart(BaseModel):
-    products: List[Product]
+    orders: List[Order]
     total: float
 
 
 def validate_product(candidate: dict):
     try:
         Product(**candidate)
+    except ValidationError as e:
+        return False, e
+    return True, None
+
+
+def validate_order(candidate: dict):
+    try:
+        Order(**candidate)
     except ValidationError as e:
         return False, e
     return True, None

@@ -3,7 +3,7 @@ from sqlite3.dbapi2 import DatabaseError
 from src.db_build import connect_db
 
 
-def create_product(conn: Connection, product: dict):
+def create_product(conn: Connection, product: dict) -> int:
     c = conn.cursor()
     c.execute("""
     INSERT INTO products (title, description, price, currency)
@@ -16,7 +16,6 @@ def create_product(conn: Connection, product: dict):
         product["price"],
         product["currency"]
         ])
-    print(f"Inserted {product}")
     c.execute(
         "SELECT product_id FROM products WHERE title = ?",
         [product["title"]])
@@ -33,13 +32,14 @@ def read_product(conn: Connection, product_id: int):
     product_raw = c.fetchall()
     if len(product_raw) == 0:
         return None
-    p_id, p_title, p_descr, p_price, p_currency = product_raw[0]
+    p_id, p_title, p_descr, p_price, p_currency, p_stock = product_raw[0]
     return {
         "product_id": p_id,
         "title": p_title,
         "description": p_descr,
         "price": p_price,
-        "currency": p_currency
+        "currency": p_currency,
+        "stock": p_stock
     }
 
 
@@ -54,7 +54,8 @@ def read_all_products(conn: Connection):
         title=p[1],
         description=p[2],
         price=p[3],
-        currency=p[4]
+        currency=p[4],
+        stock=p[5]
     ) for p in products_raw]
     return products
 
