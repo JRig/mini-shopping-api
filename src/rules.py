@@ -22,7 +22,7 @@ def every_fifth_free(func):
     def wrapper_fifth_free(orders: dict):
         for _, order in orders.items():
             if order["amount"] >= 5:
-                order["amount"] -= order["amount"]/5
+                order["amount"] -= order["amount"]//5
         return func(orders)
     return wrapper_fifth_free
 

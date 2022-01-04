@@ -63,3 +63,38 @@ def test_can_add_1_usd_discount_on_large_purchases():
     actual_total = test_calculate_total(orders)
 
     assert actual_total == expected_total
+
+
+def test_can_add_three_rules():
+    orders = {
+        "1": {
+            "price": 21,
+            "amount": 5
+        }
+    }
+    expected_total = 83
+
+    @every_fifth_free
+    @maximum_100_usd_total
+    @discount_of_1_usd_above_20
+    def test_calculate_total(orders):
+        return base_calculation(orders)
+
+    actual_total = test_calculate_total(orders)
+
+    assert actual_total == expected_total
+
+    orders = {
+        "1": {
+            "price": 21,
+            "amount": 6
+        }
+    }
+
+    try:
+        gt_100_total = test_calculate_total(orders)
+        assert False, f"Total {gt_100_total} should be > 100"
+    except RuleViolationException:
+        assert True
+
+    assert actual_total == expected_total

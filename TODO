@@ -11,7 +11,7 @@ Todo:
       ✔ Apply a 1$ discount when total is >= 20$ @done(22-01-03 09:54)
   ☐ Technical
     ☐ RESTful API
-    ☐ Extendable cart calculations
+    ✔ Extendable cart calculations @done(22-01-03 11:01)
     ✔ Store however @done(22-01-03 09:56)
     ✔ Tests @done(22-01-03 09:55)
     ☐ Readme with instructions

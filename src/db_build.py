@@ -26,11 +26,11 @@ CREATE TABLE IF NOT EXISTS orders (
     amount INTEGER DEFAULT 1,
     FOREIGN KEY (cart_id)
         REFERENCES carts (cart_id)
-        ON UPDATE CASCADE
+        ON UPDATE RESTRICT
         ON DELETE RESTRICT,
     FOREIGN KEY (product_id)
         REFERENCES products (product_id)
-        ON UPDATE CASCADE
+        ON UPDATE RESTRICT
         ON DELETE RESTRICT
 )
 """

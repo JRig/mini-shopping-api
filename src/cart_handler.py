@@ -1,8 +1,12 @@
+from os import read
 from sqlite3.dbapi2 import Connection
 from typing import List
+from src.product_handler import read_product
 from src.rules import \
+    RuleViolationException,\
     maximum_100_usd_total,\
-    discount_of_1_usd_above_20
+    discount_of_1_usd_above_20,\
+    every_fifth_free
 
 
 def create_cart(conn: Connection) -> int:
@@ -19,7 +23,20 @@ def create_cart(conn: Connection) -> int:
         INSERT INTO carts (cart_id, total)
         VALUES (?, 0.0);
     """, [new_id])
+    conn.commit()
     return new_id
+
+
+def read_cart(conn: Connection, cart_id: int) -> dict:
+    c = conn.cursor()
+    c.execute(
+        "SELECT * FROM carts WHERE cart_id = ?",
+        [cart_id])
+    cart_raw = c.fetchall()
+    if not cart_raw:
+        raise Exception("Not found")
+    cart = dict(cart_id=cart_raw[0][0], total=cart_raw[0][1])
+    return cart
 
 
 def clear_carts(conn: Connection):
@@ -27,16 +44,33 @@ def clear_carts(conn: Connection):
     c.execute("DELETE FROM carts;")
 
 
-def add_order_to_cart(conn, amount, product_id, cart_id):
+def clear_orders(conn: Connection):
     c = conn.cursor()
-    existing_orders = get_existing_orders(conn, cart_id)
-    # if product_id not in existing_orders:
-    #     existing_orders[product_id] = dict(price=0, amount=0)
-    
-    
-    # calculate new total (with rules)
-        # get existing orders in cart
-    # insert if no rules are violated
+    c.execute("DELETE FROM orders;")
+
+
+def add_order_to_cart(conn: Connection, amount: int, product_id: str, cart_id: str):
+    orders = get_existing_orders(conn, cart_id)
+    if product_id not in orders.keys():
+        product = read_product(conn, product_id)
+        if not product:
+            raise Exception("Product not found")
+        price = product["price"]
+        orders[product_id] = dict(price=price, amount=0)
+    orders[product_id]["amount"] += amount
+    total = calculate_total(orders)
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO orders (cart_id, product_id, amount) VALUES (
+            ?, ?, ?
+        )
+    """, [cart_id, product_id, amount])
+    c.execute("""
+        UPDATE carts
+        SET total = ?
+        WHERE cart_id = ?
+    """, [total, cart_id])
+    conn.commit()
 
 
 def get_existing_orders(conn: Connection, cart_id: int) -> dict:
@@ -48,20 +82,36 @@ def get_existing_orders(conn: Connection, cart_id: int) -> dict:
         WHERE o.cart_id = ?
     """, [cart_id])
     orders_raw = c.fetchall()
-    if orders_raw[0] is None:
-        return None
     orders = {}
+    if len(orders_raw) == 0:
+        return {}
     for order in orders_raw:
         product_id = str(order[0])
         price = order[1]
         amount = order[2]
         if product_id not in orders:
-            orders[product_id] = dict(price=0, amount=0)
-        orders[product_id]["price"] += price
+            orders[product_id] = dict(price=price, amount=0)
         orders[product_id]["amount"] += amount
     return orders
 
 
+def get_orders_from_db(conn: Connection, cart_id: int) -> list:
+    c = conn.cursor()
+    c.execute("""
+        SELECT * FROM orders
+        WHERE cart_id = ?;
+    """, [cart_id])
+    orders_raw = c.fetchall()
+    if not orders_raw:
+        return []
+    orders = [dict(
+        order_id=order[0],
+        product_id=order[2],
+        amount=order[3]) for order in orders_raw]
+    return orders
+
+@every_fifth_free
+@maximum_100_usd_total
 @discount_of_1_usd_above_20
 def calculate_total(orders: dict) -> float:
     return base_calculation(orders)
