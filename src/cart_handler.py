@@ -1,9 +1,6 @@
-from os import read
 from sqlite3.dbapi2 import Connection
-from typing import List
 from src.product_handler import read_product
 from src.rules import \
-    RuleViolationException,\
     maximum_100_usd_total,\
     discount_of_1_usd_above_20,\
     every_fifth_free
@@ -33,8 +30,6 @@ def read_cart(conn: Connection, cart_id: int) -> dict:
         "SELECT * FROM carts WHERE cart_id = ?",
         [cart_id])
     cart_raw = c.fetchall()
-    if not cart_raw:
-        raise Exception("Not found")
     cart = dict(cart_id=cart_raw[0][0], total=cart_raw[0][1])
     return cart
 
@@ -95,6 +90,16 @@ def get_existing_orders(conn: Connection, cart_id: int) -> dict:
     return orders
 
 
+def has_cart(conn: Connection, cart_id: int) -> bool:
+    c = conn.cursor()
+    c.execute("""
+        SELECT * FROM carts
+        WHERE cart_id = ?
+    """, [cart_id])
+    result = (len(c.fetchall()) > 0)
+    return result
+
+
 def get_orders_from_db(conn: Connection, cart_id: int) -> list:
     c = conn.cursor()
     c.execute("""
@@ -109,6 +114,7 @@ def get_orders_from_db(conn: Connection, cart_id: int) -> list:
         product_id=order[2],
         amount=order[3]) for order in orders_raw]
     return orders
+
 
 @every_fifth_free
 @maximum_100_usd_total

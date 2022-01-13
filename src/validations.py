@@ -14,7 +14,6 @@ class Product(BaseModel):
 class Order(BaseModel):
     amount: int = 1
     product_id: int
-    item_price: Optional[int]
 
 
 class Cart(BaseModel):

@@ -43,7 +43,7 @@ def test_total_amount_no_higher_than_100_usd():
     try:
         test_calculate_total(orders)
         assert False, "No error raised"
-    except RuleViolationException:
+    except RuleViolationException as e:
         assert True
 
 

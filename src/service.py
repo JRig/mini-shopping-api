@@ -2,7 +2,10 @@ import json
 from sqlite3.dbapi2 import Connection
 from flask import Flask, request, g, make_response, current_app
 from flask.wrappers import Response
-from src.cart_handler import add_order_to_cart, create_cart, get_orders_from_db, read_cart
+from src.cart_handler import \
+    add_order_to_cart, create_cart, get_orders_from_db,\
+    read_cart, has_cart
+from src.rules import RuleViolationException
 from src.validations import validate_product, validate_order, Order
 from src.product_handler import delete_product, read_product, create_product, read_all_products
 from src.db_build import connect_db
@@ -56,10 +59,9 @@ def app():
 
     @flask_app.route("/cart/<id>", methods=["GET"])
     def get_cart(id):
-        try:
-            cart = read_cart(get_db(), id)
-        except Exception:
+        if not has_cart(get_db(), id):
             return {"Error": "Cart not found."}, 404
+        cart = read_cart(get_db(), id)
         return cart
 
     @flask_app.route("/cart/<cart_id>/add", methods=["POST"])
@@ -71,13 +73,18 @@ def app():
         if not validated:
             return dict(error=err_msg), 400
         order = Order(**content)
-        add_order_to_cart(get_db(), order.amount, order.product_id, cart_id)
+        try:
+            add_order_to_cart(get_db(), order.amount, order.product_id, cart_id)
+        except RuleViolationException as e:
+            return dict(Error=e.args[0]), 400
         response = make_response('', 204)
         response.mimetype = current_app.config['JSONIFY_MIMETYPE']
         return response
 
     @flask_app.route("/cart/<cart_id>/orders", methods=["GET"])
     def show_orders(cart_id):
+        if not has_cart(get_db(), cart_id):
+            return dict(Error="Cart not found."), 404
         orders = get_orders_from_db(get_db(), cart_id)
         return Response(json.dumps(orders),  mimetype='application/json')
 
@@ -91,4 +98,4 @@ def app():
 
 
 if __name__ == "__main__":
-    app().run(debug=False)
+    app().run(debug=False, host="0.0.0.0")
